@@ -4,11 +4,14 @@ import org.aspectj.lang.annotation.Before;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.context.jdbc.Sql;
 
 import javax.persistence.PrePersist;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @DataJpaTest // DB와 관련된 컴포넌트만 테스트 - 메모리에 로딩
 public class BookRepositoryTest {
@@ -58,7 +61,7 @@ public class BookRepositoryTest {
         assertEquals("junit5", bookPS.get(0).getTitle());
         assertEquals("jm2", bookPS.get(0).getAuthor());
     }
-
+    @Sql("classpath:bd/tableInit.sql.sql")
     @Test
     void 책한건보기_test() {
         //given
@@ -68,5 +71,43 @@ public class BookRepositoryTest {
         //then
         assertEquals("junit5", bookPS.getTitle());
         assertEquals("jm2", bookPS.getAuthor());
+    }
+
+    @Sql("classpath:bd/tableInit.sql.sql")
+    @Test
+    void 책삭제_test() {
+        //given
+        Long id = 1L;
+
+        //when
+        bookRepository.deleteById(id);
+
+        //then
+        assertFalse( bookRepository.findById(id).isPresent());
+
+    }
+
+    @Test
+    void 책수정_test() {
+        //given
+        Long id = 1L;
+        String title = "junit5";
+        String author = "메타코딩";
+        Book book = new Book(id, title, author);
+
+        //when
+        Book booPS = bookRepository.save(book);
+
+//        bookRepository.findAll().stream()
+//                .forEach(b -> {
+//                    System.out.println("book = " + b.getId());
+//                    System.out.println("book = " + b.getTitle());
+//                    System.out.println("book = " + b.getAuthor());
+//                });
+        //then
+
+        assertEquals(id, booPS.getId());
+        assertEquals(title, booPS.getTitle());
+        assertEquals(author, booPS.getAuthor());
     }
 }
